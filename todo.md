@@ -1,7 +1,7 @@
-modify progs.csv
-ADD:
+modify progs.csv  
+ADD:  
 - light backage 
-REMOVE:
+REMOVE:  
 - xorg-xbacklight
 
 add udev rule for backlight + video group for user + 
