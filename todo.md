@@ -1,6 +1,8 @@
 modify progs.csv  
-ADD:  
+
+ADD:
 - light backage 
+
 REMOVE:  
 - xorg-xbacklight
 
