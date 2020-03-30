@@ -3,6 +3,7 @@ ADD progs:
 - xorg-xev
 - firefox
 - rofi
+- htop
 
 REMOVE progs:  
 - xorg-xbacklight
