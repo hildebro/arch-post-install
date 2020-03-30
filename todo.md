@@ -1,5 +1,5 @@
 ADD progs:
-- light backage 
+- light 
 - xorg-xev
 
 REMOVE progs:  
