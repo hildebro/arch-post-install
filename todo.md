@@ -4,7 +4,7 @@ ADD progs:
 - firefox
 - rofi
 - htop
-- pulseaudio
+- pulseaudio(-alsa)
 - pulsemixer
 
 REMOVE progs:  
