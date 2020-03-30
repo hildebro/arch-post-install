@@ -4,6 +4,8 @@ ADD progs:
 - firefox
 - rofi
 - htop
+- pulseaudio
+- pulsemixer
 
 REMOVE progs:  
 - xorg-xbacklight
@@ -13,4 +15,6 @@ REMOVE progs:
 add udev rule for backlight  
 add user to video group  
 zgen needs to be added sometime after repository loads  
+
+
 delete testing folder
