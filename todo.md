@@ -1,9 +1,12 @@
 ADD progs:
 - light 
 - xorg-xev
+- firefox
+- rofi
 
 REMOVE progs:  
 - xorg-xbacklight
+- brave
 - maybe fonts
 
 add udev rule for backlight  
