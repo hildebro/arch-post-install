@@ -6,8 +6,6 @@ ADD progs:
 - htop
 - pulseaudio/-alsa
 - pulsemixer
-- telegram (pip)
-- postgresql
 
 REMOVE progs:  
 - xorg-xbacklight
