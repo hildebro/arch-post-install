@@ -12,10 +12,10 @@ REMOVE progs:
 - brave
 - maybe fonts
 
+check for invalid temps from sensor, so liquidprompt doesn't show them all the time  
 add udev rule for backlight  
 add user to video group  
-zgen needs to be added sometime after repository loads
-run all postgres stuff
+zgen needs to be added sometime after dotfiles repository loads
 
 
 delete testing folder
