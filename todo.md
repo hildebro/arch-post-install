@@ -1,11 +1,12 @@
 ADD progs:
 - light 
 - xorg-xev
-- firefox
+- firefox or chrome-like
 - rofi
 - htop
 - pulseaudio/-alsa
 - pulsemixer
+- ripgrep
 
 REMOVE progs:  
 - xorg-xbacklight
