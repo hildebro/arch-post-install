@@ -19,9 +19,9 @@ add udev rule for backlight
 add user to video group  
 rename pulse output devices  
 script to add null sink and combined sink for streaming  
-zgen needs to be added after dotfiles repository loads
-reflector automation
-tearing fix (if intel)
+zgen needs to be added after dotfiles repository loads  
+reflector automation  
+tearing fix (if intel)    
 `wmname LG3D` into initrc
 
 
