@@ -20,6 +20,7 @@ add user to video group
 rename pulse output devices  
 script to add null sink and combined sink for streaming  
 zgen needs to be added after dotfiles repository loads
+reflector automation
 
 
 delete testing folder
