@@ -7,7 +7,7 @@ ADD progs:
 - pulseaudio/-alsa
 - pulsemixer
 - ripgrep
-- conky-cli
+- reflector
 
 REMOVE progs:  
 - xorg-xbacklight
