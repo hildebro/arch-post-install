@@ -21,8 +21,7 @@ rename pulse output devices
 script to add null sink and combined sink for streaming  
 zgen needs to be added after dotfiles repository loads  
 reflector automation  
-tearing fix (if intel)    
-`wmname LG3D` into initrc
+tearing fix (if intel)   
 
 
 delete testing folder
