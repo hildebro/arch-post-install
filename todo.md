@@ -23,7 +23,7 @@ zgen needs to be added after dotfiles repository loads
 reflector automation  
 tearing fix (if intel)   
 clock synch  
-
+random image generator for setbg
 
 
 delete testing folder
