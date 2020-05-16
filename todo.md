@@ -8,11 +8,13 @@ ADD progs:
 - pulsemixer
 - ripgrep
 - reflector
+- vlc
 
 REMOVE progs:  
 - xorg-xbacklight
 - brave
-- maybe fonts
+- ncmpcpp
+- fonts (maybe)
 
 check for invalid temps from sensor, so liquidprompt doesn't show them all the time  
 add udev rule for backlight  
