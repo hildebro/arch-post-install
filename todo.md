@@ -9,6 +9,7 @@ ADD progs:
 - ripgrep
 - reflector
 - vlc
+- steam
 
 REMOVE progs:  
 - xorg-xbacklight
@@ -25,7 +26,7 @@ zgen needs to be added after dotfiles repository loads
 reflector automation  
 tearing fix (if intel)   
 clock synch  
-random image generator for setbg
-
+random image generator for setbg  
+enable multilib
 
 delete testing folder
