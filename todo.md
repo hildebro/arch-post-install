@@ -29,6 +29,8 @@ reflector automation
 tearing fix (if intel)   
 clock synch  
 random image generator for setbg  
-enable multilib
+enable multilib  
+default tags for programs  
+startup script for work related progs
 
 delete testing folder
