@@ -12,6 +12,7 @@ ADD progs:
 - steam
 - steam-fonts
 - xf86-video, mesa, etc. (with lib32)
+- deluge
 
 REMOVE progs:  
 - xorg-xbacklight
