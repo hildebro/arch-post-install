@@ -10,6 +10,8 @@ ADD progs:
 - reflector
 - vlc
 - steam
+- steam-fonts
+- xf86-video, mesa, etc. (with lib32)
 
 REMOVE progs:  
 - xorg-xbacklight
