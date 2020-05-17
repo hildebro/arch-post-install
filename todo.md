@@ -32,6 +32,7 @@ clock synch
 random image generator for setbg  
 enable multilib  
 default tags for programs  
-startup script for work related progs
+startup script for work related progs  
+check more progs to be removed
 
 delete testing folder
