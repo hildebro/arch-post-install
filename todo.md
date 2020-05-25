@@ -13,6 +13,7 @@ ADD progs:
 - steam-fonts
 - xf86-video, mesa, etc. (with lib32)
 - deluge +gtk
+- slack
 
 REMOVE progs:  
 - xorg-xbacklight
