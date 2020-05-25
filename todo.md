@@ -14,6 +14,7 @@ ADD progs:
 - xf86-video, mesa, etc. (with lib32)
 - deluge +gtk
 - slack
+- rsync
 
 REMOVE progs:  
 - xorg-xbacklight
