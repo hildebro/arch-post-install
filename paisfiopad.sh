@@ -1,191 +1,119 @@
 #!/bin/sh
-# License: GNU GPLv3
 
-### OPTIONS AND VARIABLES ###
+error() {
+	printf "ERROR:\\n%s\\n" "$1"
+	exit
+        }
 
-while getopts ":a:r:b:p:h" o; do case "${o}" in
-	h) printf "Optional arguments for custom use:\\n  -r: Dotfiles repository (local file or url)\\n  -p: Dependencies and programs csv (local file or url)\\n  -a: AUR helper (must have pacman-like syntax)\\n  -h: Show this message\\n" && exit ;;
-	r) dotfilesrepo=${OPTARG} && git ls-remote "$dotfilesrepo" || exit ;;
-	b) repobranch=${OPTARG} ;;
-	p) progsfile=${OPTARG} ;;
-	a) aurhelper=${OPTARG} ;;
-	*) printf "Invalid option: -%s\\n" "$OPTARG" && exit ;;
-esac done
+[[ $1 == 'dekstop' ]] || [[ $1 == 'laptop' ]] || error "Please specify target machine."
 
-[ -z "$dotfilesrepo" ] && dotfilesrepo="https://github.com/hildebro/dotfiles.git"
-[ -z "$progsfile" ] && progsfile="https://raw.githubusercontent.com/hildebro/paisfiopad/master/progs.csv"
-[ -z "$aurhelper" ] && aurhelper="yay"
-[ -z "$repobranch" ] && repobranch="master"
+machine=$1
+dotfilesrepo="https://github.com/hildebro/dotfiles.git"
+dotfilebranch="master"
+aurhelper="yay"
+name="hillburn"
+repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
 
-
-### FUNCTIONS ###
-
-distro="arch"
-installpkg(){ pacman --noconfirm --needed -S "$1" >/dev/null 2>&1 ;}
-grepseq="\"^[PGA]*,\""
-
-error() { clear; printf "ERROR:\\n%s\\n" "$1"; exit;}
-
-getuserandpass() { \
-	# Prompts user for new username an password.
-	name=$(dialog --inputbox "First, please enter a name for the user account." 10 60 3>&1 1>&2 2>&3 3>&1) || exit
-	while ! echo "$name" | grep "^[a-z_][a-z0-9_-]*$" >/dev/null 2>&1; do
-		name=$(dialog --no-cancel --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 10 60 3>&1 1>&2 2>&3 3>&1)
-	done
-	pass1=$(dialog --no-cancel --passwordbox "Enter a password for that user." 10 60 3>&1 1>&2 2>&3 3>&1)
-	pass2=$(dialog --no-cancel --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-	while ! [ "$pass1" = "$pass2" ]; do
-		unset pass2
-		pass1=$(dialog --no-cancel --passwordbox "Passwords do not match.\\n\\nEnter password again." 10 60 3>&1 1>&2 2>&3 3>&1)
-		pass2=$(dialog --no-cancel --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-	done ;}
-
-usercheck() { \
-	! (id -u "$name" >/dev/null) 2>&1 ||
-	dialog --colors --title "WARNING!" --yes-label "CONTINUE" --no-label "No wait..." --yesno "The user \`$name\` already exists on this system. This scrip can install for a user already existing, but it will \\Zboverwrite\\Zn any conflicting settings/dotfiles on the user account.\\n\\This script will \\Zbnot\\Zn overwrite your user files, documents, videos, etc., so don't worry about that, but only click <CONTINUE> if you don't mind your settings being overwritten.\\n\\nNote also that this script will change $name's password to the one you just gave." 14 70
-	}
-
-preinstallmsg() { \
-	dialog --title "Let's get this party started!" --yes-label "Let's go!" --no-label "No, nevermind!" --yesno "The rest of the installation will now be totally automated, so you can sit back and relax.\\n\\nIt will take some time, but when done, you can relax even more with your complete system.\\n\\nNow just press <Let's go!> and the system will begin installation!" 13 60 || { clear; exit; }
-	}
-
-adduserandpass() { \
-	# Adds user `$name` with password $pass1.
-	dialog --infobox "Adding user \"$name\"..." 4 50
-	useradd -m -g wheel -s /bin/bash "$name" >/dev/null 2>&1 ||
-	usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
-	repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel "$repodir"
-	echo "$name:$pass1" | chpasswd
-	unset pass1 pass2 ;}
-
-refreshkeys() { \
-	dialog --infobox "Refreshing Arch Keyring..." 4 40
-	pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
-	}
-
-newperms() { # Set special sudoers settings for install (or after).
+newperms() { # Set sudoers settings
 	sed -i "/#paisfiopad/d" /etc/sudoers
-	echo "$* #paisfiopad" >> /etc/sudoers ;}
+	echo "$* #paisfiopad" >> /etc/sudoers
+        }
 
 manualinstall() { # Installs $1 manually if not installed. Used only for AUR helper here.
 	[ -f "/usr/bin/$1" ] || (
-	dialog --infobox "Installing \"$1\", an AUR helper..." 4 50
 	cd /tmp || exit
 	rm -rf /tmp/"$1"*
 	curl -sO https://aur.archlinux.org/cgit/aur.git/snapshot/"$1".tar.gz &&
-	sudo -u "$name" tar -xvf "$1".tar.gz >/dev/null 2>&1 &&
+	sudo -u "$name" tar -xvf "$1".tar.gz &&
 	cd "$1" &&
-	sudo -u "$name" makepkg --noconfirm -si >/dev/null 2>&1
-	cd /tmp || return) ;}
+	sudo -u "$name" makepkg --noconfirm -si
+	cd /tmp || return) ;
+        }
 
-maininstall() { # Installs all needed programs from main repo.
-	dialog --title "main installation" --infobox "Installing \`$1\` ($n of $total). $1 $2" 5 70
-	installpkg "$1"
-	}
+installpkg(){ pacman --noconfirm --needed -S "$1";}
 
 gitmakeinstall() {
 	progname="$(basename "$1")"
 	dir="$repodir/$progname"
-	dialog --title "gitmake installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $(basename "$1") $2" 5 70
-	sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
+	sudo -u "$name" git clone --depth 1 "$1" "$dir" || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
 	cd "$dir" || exit
-	make >/dev/null 2>&1
-	make install >/dev/null 2>&1
+	make
+	make install
 	cd /tmp || return ;}
 
 aurinstall() { \
-	dialog --title "AUR installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $1 $2" 5 70
-	echo "$aurinstalled" | grep "^$1$" >/dev/null 2>&1 && return
-	sudo -u "$name" $aurhelper -S --noconfirm "$1" >/dev/null 2>&1
+	sudo -u "$name" $aurhelper -S --noconfirm "$1"
 	}
 
 pipinstall() { \
-	dialog --title "pip installation" --infobox "Installing the Python package \`$1\` ($n of $total). $1 $2" 5 70
-	command -v pip || installpkg python-pip >/dev/null 2>&1
+	command -v pip || installpkg python-pip
 	yes | pip install "$1"
 	}
 
 installationloop() { \
-	([ -f "$progsfile" ] && cp "$progsfile" /tmp/progs.csv) || curl -Ls "$progsfile" | sed '/^#/d' | eval grep "$grepseq" > /tmp/progs.csv
-	total=$(wc -l < /tmp/progs.csv)
-	aurinstalled=$(pacman -Qqm)
-	while IFS=, read -r tag program comment; do
+	cp progs.csv /tmp/progs.csv
+        cd /tmp
+	total=$(wc -l < progs.csv)
+	while IFS=, read -r tag program; do
 		n=$((n+1))
-		echo "$comment" | grep "^\".*\"$" >/dev/null 2>&1 && comment="$(echo "$comment" | sed "s/\(^\"\|\"$\)//g")"
 		case "$tag" in
-			"A") aurinstall "$program" "$comment" ;;
-			"G") gitmakeinstall "$program" "$comment" ;;
-			"P") pipinstall "$program" "$comment" ;;
-			*) maininstall "$program" "$comment" ;;
+			"A") aurinstall "$program" ;;
+			"G") gitmakeinstall "$program" ;;
+			"P") pipinstall "$program" ;;
+			*) installpkg "$program"  ;;
 		esac
-	done < /tmp/progs.csv ;}
+	done < progs.csv ;}
 
-putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
-	dialog --infobox "Downloading and installing config files..." 4 60
-	[ -z "$3" ] && branch="master" || branch="$repobranch"
-	dir=$(mktemp -d)
-	[ ! -d "$2" ] && mkdir -p "$2"
-	chown -R "$name":wheel "$dir" "$2"
-	sudo -u "$name" git clone -b "$branch" --depth 1 "$1" "$dir" >/dev/null 2>&1
-	sudo -u "$name" cp -rfT "$dir" "$2"
-	}
+# Refresh keyring
+pacman --noconfirm -Sy archlinux-keyring
 
-systembeepoff() { dialog --infobox "Getting rid of that error beep sound..." 10 50
-	rmmod pcspkr
-	echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf ;}
-
-finalize(){ \
-	dialog --title "All done!" --msgbox "Congrats! Provided there were no hidden errors, the script completed successfully and all the programs and configuration files should be in place.\\n\\nTo run the new graphical environment, log out and log back in as your new user, then run the command \"startx\" to start the graphical environment (it will start automatically in tty1)." 12 80
-	}
-
-### THE ACTUAL SCRIPT ###
-
-### This is how everything happens in an intuitive format and order.
-
-# Check if user is root on Arch distro. Install dialog.
-installpkg dialog || error "Are you sure you're running this as the root user and have an internet connection?"
-
-# Get and verify username and password.
-getuserandpass || error "User exited."
-
-# Give warning if user already exists.
-usercheck || error "User exited."
-
-# Last chance for user to back out before install.
-preinstallmsg || error "User exited."
-
-### The rest of the script requires no user input.
-
-adduserandpass || error "Error adding username and/or password."
-
-# Refresh Arch keyrings.
-# refreshkeys || error "Error automatically refreshing Arch keyring. Consider doing so manually."
-
-dialog --title "base installation" --infobox "Installing \`basedevel\` and \`git\` for installing other software required for the installation of other programs." 5 70
+# Some base packages
 installpkg curl
 installpkg base-devel
 installpkg git
 installpkg ntp
 
-dialog --title "time installation" --infobox "Synchronizing system time to ensure successful and secure installation of software..." 4 70
-ntp 0.us.pool.ntp.org >/dev/null 2>&1
+# Sync system time manually once before installation, just in case
+ntp 0.us.pool.ntp.org
 
-[ "$distro" = arch ] && { \
-	[ -f /etc/sudoers.pacnew ] && cp /etc/sudoers.pacnew /etc/sudoers # Just in case
+# Allow user to run sudo without password. Since AUR programs must be installed
+# in a fakeroot environment, this is required for all builds with AUR.
+newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
 
-	# Allow user to run sudo without password. Since AUR programs must be installed
-	# in a fakeroot environment, this is required for all builds with AUR.
-	newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
+# Make pacman and yay colorful and adds eye candy on the progress bar
+grep "^Color" /etc/pacman.conf >/dev/null || sed -i "s/^#Color$/Color/" /etc/pacman.conf
+grep "ILoveCandy" /etc/pacman.conf >/dev/null || sed -i "/#VerbosePkgLists/a ILoveCandy" /etc/pacman.conf
 
-	# Make pacman and yay colorful and adds eye candy on the progress bar because why not.
-	grep "^Color" /etc/pacman.conf >/dev/null || sed -i "s/^#Color$/Color/" /etc/pacman.conf
-	grep "ILoveCandy" /etc/pacman.conf >/dev/null || sed -i "/#VerbosePkgLists/a ILoveCandy" /etc/pacman.conf
+# Use all cores for compilation.
+sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
 
-	# Use all cores for compilation.
-	sed -i "s/-j2/-j$(nproc)/;s/^#MAKEFLAGS/MAKEFLAGS/" /etc/makepkg.conf
+# Install aur helper
+manualinstall $aurhelper || error "Failed to install AUR helper."
 
-	manualinstall $aurhelper || error "Failed to install AUR helper."
-	}
+# Enable multilib
+sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf
+
+# Device specific options
+if [ $machine == 'laptop' ]; then
+    # Graphics
+    installpkg xf86-video-intel
+    installpkg mesa
+    installpkg lib32-mesa
+    installpkg vulkan-intel
+    # Fix tearing
+    cp system-files/20-intel.conf /etc/X11/xorg.conf.d/20-intel.conf
+    # Ignore unreadable sensor on thinkpads (mainly to prevent an error with liquidprompt)
+    cp system-files/thinkpad /etc/sensors.d/thinkpad
+    # Enable backlight control for video group
+    cp system-files/backlight.rules /etc/udev/rules.d/backlight.rules
+    # Add user to video group
+    usermod -a -G video $name
+else
+    # Graphics
+    installpkg nvidia
+    installpkg nvidia-utils
+    installpkg lib32-nvidia-utils
+fi
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required. Be sure to run this only after
@@ -193,26 +121,39 @@ ntp 0.us.pool.ntp.org >/dev/null 2>&1
 # and all build dependencies are installed.
 installationloop
 
-dialog --title "emoji-fix installation" --infobox "Finally, installing \`libxft-bgra\` to enable color emoji in suckless software without crashes." 5 70
-yes | sudo -u "$name" $aurhelper -S libxft-bgra >/dev/null 2>&1
+# Emoji rendering fix for suckless software
+yes | sudo -u "$name" $aurhelper -S libxft-bgra
 
-# Install the dotfiles in the user's home directory
-putgitrepo "$dotfilesrepo" "/home/$name" "$repobranch"
+# Install dotfiles in the user's home directory
+dir=$(mktemp -d)
+[ ! -d "/home/$name" ] && mkdir -p "/home/$name"
+chown -R "$name":wheel "$dir" "/home/$name"
+sudo -u "$name" git clone -b "$branch" --depth 1 "$dotfilesrepo" "$dir"
+sudo -u "$name" cp -rfT "$dir" "/home/$name"
 
-# Most important command! Get rid of the beep!
-systembeepoff
+# Clone zgen into zsh config directory
+git clone https://github.com/tarjoilija/zgen.git /home/$name/.config/zsh/.zgen
 
-# Make zsh the default shell for the user.
+# Weekly timer to refresh mirrorlist
+cp system-files/reflector.service /etc/systemd/system/reflector.service
+cp system-files/reflector.timer /etc/systemd/system/reflector.timer
+systemctl enable reflector.timer
+
+# Daily service to sync time
+systemctl enable ntpdate.service
+
+# Get rid of system beep
+rmmod pcspkr
+echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf ;
+
+# Make zsh the default shell for the user
 sed -i "s/^$name:\(.*\):\/bin\/.*/$name:\1:\/bin\/zsh/" /etc/passwd
 
-# dbus UUID must be generated for Artix runit.
+# dbus UUID must be generated for Artix runit
 dbus-uuidgen > /var/lib/dbus/machine-id
 
 # This line, overwriting the `newperms` command above will allow the user to run
 # serveral important commands, `shutdown`, `reboot`, updating, etc. without a password.
-[ "$distro" = arch ] && newperms "%wheel ALL=(ALL) ALL
+newperms "%wheel ALL=(ALL) ALL
 %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/loadkeys,/usr/bin/yay"
 
-# Last message! Install complete!
-finalize
-clear

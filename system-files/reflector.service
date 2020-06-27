@@ -1,0 +1,9 @@
+[Unit]
+Description=Pacman mirrorlist update
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/reflector --protocol http --protocol https --latest 200 --fastest 10 --save /etc/pacman.d/mirrorlist
+
