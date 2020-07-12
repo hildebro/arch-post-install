@@ -5,6 +5,7 @@ error() {
 	exit
         }
 
+# todo opption doesn't work
 [[ $1 == 'dekstop' ]] || [[ $1 == 'laptop' ]] || error "Please specify target machine."
 
 machine=$1
@@ -136,6 +137,7 @@ sudo -u "$name" cp -rfT "$dir" "/home/$name"
 git clone https://github.com/tarjoilija/zgen.git /home/$name/.config/zsh/.zgen
 
 # Weekly timer to refresh mirrorlist
+# todo go back into paisfiopad folder or use absolute path
 cp system-files/reflector.service /etc/systemd/system/reflector.service
 cp system-files/reflector.timer /etc/systemd/system/reflector.timer
 systemctl enable reflector.timer
