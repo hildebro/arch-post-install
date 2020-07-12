@@ -92,6 +92,7 @@ manualinstall $aurhelper || error "Failed to install AUR helper."
 
 # Enable multilib
 sed -i '/^#\[multilib\]/{N;s/#//g}' /etc/pacman.conf
+sudo pacman -Sy
 
 # Device specific options
 if [ $machine == 'laptop' ]; then
