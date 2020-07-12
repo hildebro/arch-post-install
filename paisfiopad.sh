@@ -131,8 +131,8 @@ yes | sudo -u "$name" $aurhelper -S libxft-bgra
 chown -R "$name":wheel "/home/$name"
 sudo -u "$name" git clone -b "$branch" --depth 1 "$dotfilesrepo" /tmp/dotfiles
 sudo -u "$name" cp -rfT /tmp/dotfiles "/home/$name"
-# Setup dotfiles git config to work via alias + worktree
-
+# Setup dotfiles git config to work via "dg" alias (see dotfiles)
+mv "/home/$name/.git" "/home/$name/.dotfiles"
 
 # Clone zgen into zsh config directory
 sudo -u "$name" git clone https://github.com/tarjoilija/zgen.git /home/$name/.config/zsh/.zgen
