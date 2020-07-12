@@ -127,14 +127,13 @@ installationloop
 yes | sudo -u "$name" $aurhelper -S libxft-bgra
 
 # Install dotfiles in the user's home directory
-dir=$(mktemp -d)
 [ ! -d "/home/$name" ] && mkdir -p "/home/$name"
-chown -R "$name":wheel "$dir" "/home/$name"
-sudo -u "$name" git clone -b "$branch" --depth 1 "$dotfilesrepo" "$dir"
-sudo -u "$name" cp -rfT "$dir" "/home/$name"
+chown -R "$name":wheel "/home/$name"
+sudo -u "$name" git clone -b "$branch" --depth 1 "$dotfilesrepo" /tmp/dotfiles
+sudo -u "$name" cp -rfT /tmp/dotfiles "/home/$name"
 
 # Clone zgen into zsh config directory
-git clone https://github.com/tarjoilija/zgen.git /home/$name/.config/zsh/.zgen
+sudo -u "$name" git clone https://github.com/tarjoilija/zgen.git /home/$name/.config/zsh/.zgen
 
 # Weekly timer to refresh mirrorlist
 # todo go back into paisfiopad folder or use absolute path
