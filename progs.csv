@@ -11,6 +11,7 @@
 ,xorg-xprop
 ,dosfstools
 ,libnotify
+,docker
 ,dunst
 ,exfat-utils
 ,sxiv
@@ -54,6 +55,7 @@
 ,ripgrep
 ,reflector
 ,steam
+,telegram-desktop
 ,deluge
 ,deluge-gtk
 ,rsync
