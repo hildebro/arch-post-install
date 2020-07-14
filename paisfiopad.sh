@@ -113,6 +113,7 @@ if [ $machine == 'laptop' ]; then
 else
     # Graphics
     installpkg nvidia
+    installpkg nvidia-settings
     installpkg nvidia-utils
     installpkg lib32-nvidia-utils
 fi
