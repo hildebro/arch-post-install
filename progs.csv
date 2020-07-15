@@ -49,6 +49,7 @@
 ,chromium
 ,rofi
 ,htop
+,mumble
 ,pulseaudio
 ,pulseaudio-alsa
 ,pulsemixer
@@ -59,6 +60,7 @@
 ,deluge
 ,deluge-gtk
 ,rsync
+,tk
 ,zsh
 V,xorg-minimal
 V,xorg-fonts
