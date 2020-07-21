@@ -3,6 +3,7 @@
 ,xorg-xwininfo
 ,xorg-xinit
 ,i3-gaps
+,i3lock
 ,ttf-inconsolata
 ,ttf-linux-libertine
 ,arandr
