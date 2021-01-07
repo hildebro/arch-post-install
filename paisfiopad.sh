@@ -102,6 +102,7 @@ if [ $machine == 'laptop' ]; then
     installpkg mesa
     installpkg lib32-mesa
     installpkg vulkan-intel
+    installpkg intel-ucode
     # Fix tearing
     cp system-files/20-intel.conf /etc/X11/xorg.conf.d/20-intel.conf
     # Ignore unreadable sensor on thinkpads (mainly to prevent an error with liquidprompt)
@@ -116,6 +117,7 @@ else
     installpkg nvidia-settings
     installpkg nvidia-utils
     installpkg lib32-nvidia-utils
+    installpkg amd-ucode
 fi
 
 # The command that does all the installing. Reads the progs.csv file and
