@@ -98,7 +98,6 @@ sudo pacman -Sy
 # Device specific options
 if [ $machine == 'laptop' ]; then
     # Graphics
-    installpkg xf86-video-intel
     installpkg mesa
     installpkg lib32-mesa
     installpkg vulkan-intel
